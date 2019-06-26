@@ -1,6 +1,7 @@
 # kalinkina_infra
 kalinkina Infra repository
 
+Homework #2
 Add Pull Request Template
 
 ``` 
@@ -41,3 +42,22 @@ mkdir play-travis
 wget https://raw.githubusercontent.com/express42/otus-snippets/master/hw-04/test.py
 git commit -am "Commit"
 ```
+
+Homework #3
+
+1) Connect with someinternalhost through bastion
+```
+ssh -J bastion_ip someinternalhost_ip
+```
+
+2) Connect with someinternalhost through bastion via hostname 
+  - add in .ssh/config
+
+```
+Host bastion
+Hostname <external_ip>
+
+Host someinternalhost
+Hostname <internal_ip>
+``
+  - ``` ssh -J bastion someinternalhost ```
