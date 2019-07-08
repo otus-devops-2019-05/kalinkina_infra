@@ -1,8 +1,8 @@
 # kalinkina_infra
 kalinkina Infra repository
 
-Homework #2
-Add Pull Request Template
+#Homework #2
+##Add Pull Request Template
 
 ``` 
 mkdir .github
@@ -13,7 +13,7 @@ git commit -m 'Add PR template'
 git push --set-upstream origin play-travis 
 ```
 
-Integration with travis CI
+##Integration with travis CI
 1) Add .travis.yml file
 ```
 dist: trusty
@@ -43,7 +43,7 @@ wget https://raw.githubusercontent.com/express42/otus-snippets/master/hw-04/test
 git commit -am "Commit"
 ```
 
-Homework #3
+#Homework #3
 
 1) Connect with someinternalhost through bastion
 ```
@@ -87,5 +87,27 @@ Data for checking:
 ```
 bastion_IP = 35.206.161.239
 someinternalhost_IP = 10.128.0.3
+```
+
+#Homework #4
+```
+testapp_IP = 35.221.228.74
+testapp_port = 9292
+```
+## Create gcloud instance with startup-script
+
+```
+gcloud compute instances create test \
+--boot-disk-size=10GB \
+--image-family ubuntu-1604-lts \
+--image-project=ubuntu-os-cloud \
+--machine-type=g1-small \
+--tags puma-server \
+--restart-on-failure \
+--metadata-from-file startup-script=<location_of_script>/kalinkina_infra/startup.sh
+```
+##Create firewall rule through consol
+```
+gcloud compute firewall-rules create default-puma-server --allow=tcp:9292 --target-tags=puma-server
 ```
 
