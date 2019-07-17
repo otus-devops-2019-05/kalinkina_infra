@@ -111,3 +111,19 @@ gcloud compute instances create test \
 gcloud compute firewall-rules create default-puma-server --allow=tcp:9292 --target-tags=puma-server
 ```
 
+#Homework #5
+
+##Create image through Packer
+ - install packer
+ - install ADC(Application Default Credentials)
+```
+ gcloud auth application-default login
+```
+ - create template ubuntu16.json
+ - check errors ``` packer validate ./ubuntu16.json ```
+ - packer build ubuntu16.json
+
+##Template User Variables
+1-3) packer build -var 'machine_type=f1-micro' -var-file=variables.json.example ubuntu16.json
+4) Backed image in immutable.json
+5) create-redditvm.sh create instance founded on reddit-full image_family
