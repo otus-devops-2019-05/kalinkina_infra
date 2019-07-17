@@ -4,10 +4,10 @@
             "type": "googlecompute",
             "project_id": "infra-244814",
             "image_name": "reddit-base-{{timestamp}}",
-            "image_family": "reddit-base",
+            "image_family": "reddit-full",
             "source_image_family": "ubuntu-1604-lts",
             "zone": "europe-west1-b",
-            "ssh_username": "appuser",
+            "ssh_username": "lada",
             "machine_type": "f1-micro"
         }
     ],
@@ -21,6 +21,13 @@
             "type": "shell",
             "script": "scripts/install_mongodb.sh",
             "execute_command": "sudo {{.Path}}"
+        },
+        {
+            "type": "shell",
+            "inline": [
+              "git clone -b monolith https://github.com/express42/reddit.git",
+              " cd reddit && bundle install"
+            ]
         }
     ]
 }

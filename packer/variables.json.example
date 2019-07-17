@@ -1,0 +1,9 @@
+{
+  "project_id": "infra-7909454",
+  "source_image_family": "ubuntu-1604-lts",
+  "disk_size": "10",
+  "disk_type": "pd-standard",
+  "image_description": "decisive advantage",
+  "network": "default",
+  "tags": "puma-server"
+}
