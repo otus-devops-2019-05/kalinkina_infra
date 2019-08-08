@@ -25,3 +25,7 @@ variable private_key {
 variable zone {
   description = "zone"
 }
+
+variable "app_count" {
+  description = "Count of provisioned application nodes"
+}
