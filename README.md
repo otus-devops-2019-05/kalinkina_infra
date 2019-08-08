@@ -110,7 +110,7 @@ gcloud compute firewall-rules create default-puma-server --allow=tcp:9292 --targ
  - install ADC(Application Default Credentials)
 `gcloud auth application-default login`
  - create template ubuntu16.json
- - check errors 
+ - check errors
 ` packer validate ./ubuntu16.json `
  - packer build ubuntu16.json
 
@@ -257,3 +257,15 @@ disk_image = "reddit-base"
  ```
 
 3. При запуске terraform apply ssh ключ, добавленный через веб-интерфейс, исчез
+
+##### Tasks with **
+**1) Cоздание HTTP балансировщика, направляющего трафик на развернутое приложение на инстансе reddit-app.**
+  -  resource "google_compute_forwarding_rule"
+  -   resource "google_compute_target_pool"
+  -   resource "google_compute_http_health_check"
+
+**2) Добавление нового инстанса приложения reddit-app2**
+Какие проблемы вы видите в такой конфигурации приложения?
+Часть запросов будет идти на первое приложение, а часть на второе. Соответсвенно контент у приложений будет разный. Пользователь может добавить свой пост в первое приложение, а в следующий раз его перебросит на второе приложение.
+
+**3) Добавление нового инстанса приложения с помощью переменной count**
