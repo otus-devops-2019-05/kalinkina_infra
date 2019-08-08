@@ -4,4 +4,3 @@ packer/variables.json
 *.tfstate.backup
 *.tfvars
 .terraform/
-!*.tfvars.example
