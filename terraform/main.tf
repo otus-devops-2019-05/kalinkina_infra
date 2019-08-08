@@ -79,11 +79,11 @@ resource "google_compute_firewall" "firewall_puma" {
 }
 resource "google_compute_project_metadata" "default" {
   metadata = {
-    appuser  = "${file("~/.ssh/id_rsa.pub")}"
-    appuser1 = "${file("~/.ssh/id_rsa.pub")}"
+    appuser  = "${file(var.private_key)}"
+    appuser1 = "${file(var.private_key)}"
   }
 }
 resource "google_compute_project_metadata_item" "default" {
   key = "app"
-  value = "${file("~/.ssh/id_rsa.pub")}"
+  value = "${file(var.private_key)}"
 }
