@@ -120,7 +120,7 @@ gcloud compute firewall-rules create default-puma-server --allow=tcp:9292 --targ
 5. create-redditvm.sh create instance founded on reddit-full image_family
 ***
 
-## Homework #6
+## Homework № 5
 #### IaC with terraform
 (using terraform 0.11.11)
 
