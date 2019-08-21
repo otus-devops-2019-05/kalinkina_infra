@@ -30,3 +30,12 @@ module "vpc" {
   source        = "../modules/vpc"
   source_ranges = ["0.0.0.0/0"]
 }
+
+resource "template_file" "inventory" {
+  template = "${file("../../ansible/inventory.json")}"
+
+  vars {
+    app_ip = "${module.app.app_external_ip}"
+    db_ip  = "${module.db.db_external_ip}"
+  }
+}
