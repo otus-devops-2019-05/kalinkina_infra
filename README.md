@@ -120,7 +120,7 @@ gcloud compute firewall-rules create default-puma-server --allow=tcp:9292 --targ
 5. create-redditvm.sh create instance founded on reddit-full image_family
 ***
 
-## Homework #6
+## Homework № 5
 #### IaC with terraform
 (using terraform 0.11.11)
 
@@ -269,3 +269,91 @@ disk_image = "reddit-base"
 Часть запросов будет идти на первое приложение, а часть на второе. Соответсвенно контент у приложений будет разный. Пользователь может добавить свой пост в первое приложение, а в следующий раз его перебросит на второе приложение.
 
 **3) Добавление нового инстанса приложения с помощью переменной count**
+
+***
+## Homework №6
+1) Определение правил файерволла
+```
+resource "google_compute_firewall" "firewall_ssh" {
+  name = "default-allow-ssh"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = ["22"]
+    }
+  source_ranges = ["0.0.0.0/0"]
+}
+```
+> terraform import google_compute_firewall.firewall_ssh default-allow-ssh для получения информации о правиле файерволла
+
+2) Определение IP инстанса
+```
+resource "google_compute_address" "app_ip" {
+  name = "reddit-app-ip"
+}
+```
+  - ссылаемся на IP ресурса - неявная зависимость
+```
+network_interface {
+  network = "default"
+  access_config = {
+    nat_ip = "${google_compute_address.app_ip.address}"
+    }
+}
+```
+
+#### Modules
+  - `terraform get` загружает модули
+
+> Модули будут загружены в директорию .terraform. Основная задача, которую решают модули - это увеличивают переиспользуемость кода и помогают нам следовать принципу
+DRY.
+
+1) Модуль vpc в terraform/modules/vpc/main.tf
+
+```
+resource "google_compute_firewall" "firewall_ssh" {
+  name = "default-allow-ssh"
+  network = "default"
+  allow {
+    protocol = "tcp"
+    ports = ["22"]
+  }
+  source_ranges = ["0.0.0.0/0"]
+}
+```
+terraform/main.tf
+```module "vpc" {
+  source = "modules/vpc"
+}
+```
+2) Параметризация модулей
+terraform/modules/vpc/variables.tf
+```
+variable source_ranges {
+  description = "Allowed IP addresses"
+  default = ["0.0.0.0/0"]
+}
+```
+#### Реестр модулей
+> Модули бывают Verified и
+обычные. Verified это модули от HashiCorp и ее партнеров.
+
+1) Создадим storage-bucket
+```
+provider "google" {
+  version = "2.0.0"
+  project = "${var.project}"
+  region = "${var.region}"
+}
+module "storage-bucket" {
+  source = "SweetOps/storage-bucket/google"
+  version = "0.1.1"
+  # Имена поменяйте на другие
+  name = ["storage-1", "storage-2"]
+}
+output storage-bucket_url {
+  value = "${module.storage-bucket.url}"
+}
+```
+2) terraform get загрузим модуль
+3) terraform apply
