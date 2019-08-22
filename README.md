@@ -357,3 +357,90 @@ output storage-bucket_url {
 ```
 2) terraform get загрузим модуль
 3) terraform apply
+***
+## Homework № 7
+### Ansible
+1) Установка Ansible
+```
+pip install ansible>=2.4
+ansible --version
+```
+> Ansible управляет инстансами виртуальных машин (c Linux ОС)
+используя SSH-соединение.
+
+2) Inventory file
+
+  - Хосты и группы хостов, которыми Ansible должен управлять,
+описываются в инвентори-файле.
+  - В инвентори файле мы можем определить группу хостов для
+управления конфигурацией сразу нескольких хостов.
+  - Начиная с Ansible 2.4 появилась возможность использовать YAML для inventory.
+  - Ключ -i переопределяет путь к инвентори файлу.
+
+
+3) Параметры ansible.cfg
+
+ ```
+[defaults]
+inventory = ./inventory
+remote_user = appuser
+private_key_file = ~/.ssh/appuser
+host_key_checking = False
+retry_files_enabled = False
+```
+
+4) Модули Ansible
+
+  - ping `ansible appserver -i ./inventory -m ping` позволяет протестировать SSH-соединение;
+  - command `ansible dbserver -m command -a uptime`  выполняет команды, не используя оболочку
+(sh, bash), поэтому в нем не работают перенаправления потоков и нет доступа к некоторым переменным окружения.
+  - shell `ansible app -m shell -a 'ruby -v; bundler -v'` dыполняет команды, используя оболочку (sh, bash).
+  - systemd `ansible db -m systemd -a name=mongod` предназначен для управления сервисами, возвращает в качестве ответа набор переменных.
+
+#### Простой плэйбук
+
+  - `ansible app -m command -a 'rm -rf
+~/reddit'` удаляет папку reddit
+
+```
+ansible-playbook clone.yml
+appserver                  : ok=2    changed=1    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0
+```
+Task [Clone repo] в статусе changed, потому что в данном случае произошли изменения (файлы были скачены с сервера) в предыдущем случае ничего не менялось из -за идемпотентности
+
+> Идемпотентность - свойство объекта или операции при
+повторном применении операции к объекту давать тот же
+результат, что и при первом применении
+
+### Task with * (динамический инвентори)
+
+1) Прописываем для db output var
+
+  - stage/outputs.tf
+```
+output "db_external_ip" {
+  value = "${module.db.db_external_ip}"
+}
+```
+  - modules/db/main.tf
+```
+...
+    access_config = {
+      nat_ip = "${google_compute_address.db_ip.address}"
+    }
+  }
+...
+resource "google_compute_address" "db_ip" {
+  name = "reddit-db-ip"
+}
+```
+2) Прописать новый ресурс в stage/main.tf
+```
+resource "template_file" "inventory" {
+  template = "${file("../../ansible/inventory.json")}"
+  vars {
+    app_ip = "${module.app.app_external_ip}"
+    db_ip  = "${module.db.db_external_ip}"
+  }
+```
+3) В ansible.cfg прописать новый inventory
