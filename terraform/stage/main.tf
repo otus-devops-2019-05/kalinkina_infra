@@ -6,36 +6,43 @@ terraform {
 provider "google" {
   # Версия провайдера
   version = "2.0.0"
-
-  # ID проекта
   project = "${var.project}"
-  region  = "${var.region}"
+  region  = "europe-west1"
+  zone    = "europe-west1-b"
+  alias   = "app"
+}
+
+provider "google" {
+  # Версия провайдера
+  version = "2.0.0"
+  project = "${var.project}"
+  region  = "us-central1"
+  zone    = "us-central1-a"
+  alias   = "db"
 }
 
 module "app" {
   source          = "../modules/app"
   public_key_path = "${var.public_key_path}"
-  zone            = "${var.zone}"
   app_disk_image  = "${var.app_disk_image}"
+  providers = {
+    google = "google.app"
+  }
 }
 
 module "db" {
   source          = "../modules/db"
   public_key_path = "${var.public_key_path}"
-  zone            = "${var.zone}"
   db_disk_image   = "${var.db_disk_image}"
+  providers = {
+    google = "google.db"
+  }
 }
 
 module "vpc" {
   source        = "../modules/vpc"
   source_ranges = ["0.0.0.0/0"]
-}
-
-resource "template_file" "inventory" {
-  template = "${file("../../ansible/inventory.json")}"
-
-  vars {
-    app_ip = "${module.app.app_external_ip}"
-    db_ip  = "${module.db.db_external_ip}"
+  providers = {
+    google = "google.app"
   }
 }
