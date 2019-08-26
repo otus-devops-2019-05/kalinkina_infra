@@ -16,8 +16,8 @@ provider "google" {
   # Версия провайдера
   version = "2.0.0"
   project = "${var.project}"
-  region  = "us-central1"
-  zone    = "us-central1-a"
+  region  = "europe-west4"
+  zone    = "europe-west4-c"
   alias   = "db"
 }
 

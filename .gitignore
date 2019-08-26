@@ -5,3 +5,5 @@ packer/variables.json
 *.tfvars
 .terraform/
 ansible/ansible
+*.retry
+
