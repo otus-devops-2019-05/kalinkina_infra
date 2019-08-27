@@ -444,3 +444,71 @@ resource "template_file" "inventory" {
   }
 ```
 3) В ansible.cfg прописать новый inventory
+---
+
+## Homework №7
+#### Плэйбуки
+ - это набор команд Ansible (задач, tasks), похожих на те, что мы выполняли с утилитой ansible. Эти задачи направлены на конкретные наборы узлов/групп.
+
+#### Хэндлеры
+
+> Handlers похожи на таски, однако запускаются только по оповещению от других задач.
+Таск шлет оповещение handler-у в случае, когда он меняет свое состояние. По этой причине handlers удобно использовать для перезапуска сервисов.
+
+```
+    - name: Fetch the latest version of application code
+      git:
+        repo: 'https://github.com/express42/reddit.git'
+        dest: /home/appuser/reddit
+        version: monolith # <-- Указываем нужную ветку
+      tags: deploy-tag
+      notify: reload puma
+  - name: reload puma
+    become: true
+    systemd: name=puma state=restarted
+```
+
+#### Улучшение плэйбука
+
+  - папка files для хранения конфигурационных файлов
+  - директория templates для шаблонов с переменными
+` DATABASE_URL={{ db_host }} `
+  - для запуска нужных тасков на заданной группе хостов мы используем опцию --limit для указания группы хостов и --tags для указания нужных тасков.
+
+#### Несколько плэйбуков
+
+> проблема:
+с ростом числа управляемых сервисов, будет расти
+количество различных сценариев и, как результат, увеличится
+объем плейбука. Поэтому, лучше разделять
+один большой плейбук на несколько.
+
+
+### Провижининг в Packer
+
+  - добавляем ansible/packer_app.yml
+и ansible/packer_db.yml
+  - включаем ансибл-плэйбук в образ пакера
+```
+    "provisioners": [
+      {
+            "type": "ansible",
+            "playbook_file": "ansible/packer_db.yml",
+            "extra_arguments": [
+               "--ssh-extra-args",
+               "-o IdentitiesOnly=yes"
+        ]
+```
+без опции ` "-o IdentitiesOnly=yes" ` билд падал с ошибкой
+```
+==> googlecompute: Executing Ansible: ansible-playbook --extra-vars packer_build_name=googlecompute packer_builder_type=googlecompute -o IdentitiesOnly=yes -i /tmp/packer-provisioner-ansible112812579 /home/lada/otus/kalinkina_infra/ansible/packer_app.yml -e ansible_ssh_private_key_file=/tmp/ansible-key765790420
+    googlecompute:
+    googlecompute: PLAY [Install ruby and bundle] *************************************************
+    googlecompute:
+    googlecompute: TASK [Gathering Facts] *********************************************************
+==> googlecompute: failed to handshake
+    googlecompute: fatal: [default]: UNREACHABLE! => {"changed": false, "msg": "Failed to connect to the host via ssh: Warning: Permanently added '[127.0.0.1]:26099' (RSA) to the list of known hosts.\r\nReceived disconnect from 127.0.0.1 port 26099:2: too many authentication failures\r\nDisconnected from 127.0.0.1 port 26099", "unreachable": true}
+    googlecompute:
+    googlecompute: PLAY RECAP *********************************************************************
+    googlecompute: default                    : ok=0    changed=0    unreachable=1    failed=0    skipped=0    rescued=0    ignored=0
+```
