@@ -571,4 +571,22 @@ resource "google_compute_firewall" "firewall_http" {
 ```
   2) Добавим вызов роли jdauphant.nginx в плейбук app.yml
   3) Протестировать
+
+  #### Ansible Vault
+    - утилита для шифрования(default AES256) файлов групповых или хостовых переменных и в принципе любых файлов в которых вы хотите хранить секретные переменные (пароли, ключи и т.д.).
+
+  > Для шифрования используется мастер-пароль (aka vault key ).
+  Его нужно передавать команде ansible-playbook при запуске,
+  либо указать файл с ключом в ansible.cfg .
+
+    - для разных окружений разный vault key
+    - нельзя хранить vault key в гите
+
+  1) Зашифровать файл `ansible-vault encrypt file`
+
+  2) Отредактировать зашифрованный файл `ansible-vault edit file`
+
+  3) Показать зашифрованный файл `ansible-vault view file`
+
+  4) Расшифровать файл `ansible-vault decrypt file`
   
