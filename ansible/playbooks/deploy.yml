@@ -6,7 +6,7 @@
         repo: 'https://github.com/express42/reddit.git'
         dest: /home/appuser/reddit
         version: monolith
-      notify: restart puma
+      notify: reload puma
 
     - name: bundle install
       bundler:
@@ -14,7 +14,5 @@
         chdir: /home/appuser/reddit
 
   handlers:
-  - name: restart puma
-    become: true
+  - name: reload puma
     systemd: name=puma state=restarted
-    
