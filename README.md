@@ -685,3 +685,19 @@ def test_config_file(host):
  - db/molecule/default/playbook.yml плэйбук для тестов
  - `molecule converge` применить плэйбук
  - `molecule verify` запустим тесты
+
+ #### Самостоятельно
+  - тест, проверяющий порт базы
+ ```
+ def test_db_port(host):
+     db_port = host.socket("tcp://27017")
+     assert db_port.is_listening
+ ```
+
+  - модифицируем packer_db/app.yml
+ ```
+             "extra_arguments": [
+                "--ssh-extra-args",
+                "-o IdentitiesOnly=yes",
+                "--tags", "ruby"
+ ```
