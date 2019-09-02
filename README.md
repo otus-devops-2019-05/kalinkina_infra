@@ -589,4 +589,115 @@ resource "google_compute_firewall" "firewall_http" {
   3) Показать зашифрованный файл `ansible-vault view file`
 
   4) Расшифровать файл `ansible-vault decrypt file`
-  
+
+  ## Homework № 9
+### Локальная разработка с Vagrant
+
+> Описание характеристик VMs, которые мы хотим
+создать, должно содержаться в файле с
+названием Vagrantfile.
+```
+Vagrant.configure("2") do |config|
+  config.vm.provider :virtualbox do |v|
+    v.memory = 512 #количество памяти, выделяемое провайдером под VMs
+  end
+  config.vm.define "dbserver" do |db|
+    db.vm.box = "ubuntu/xenial64"
+    db.vm.hostname = "dbserver" #Имя VM
+    db.vm.network :private_network, ip: "10.10.10.10"
+  end
+  config.vm.define "appserver" do |app|
+    app.vm.box = "ubuntu/xenial64" #название бокса (образа VM)
+    app.vm.hostname = "appserver"
+    app.vm.network :private_network, ip: "10.10.10.20"
+  end
+end
+```
+Vagrant Cloud - главное хранилище Vagrant боксов.
+
+#### Доработка ролей
+
+> Vagrant поддерживает большое количество
+[провижинеров](https://www.vagrantup.com/docs/provisioning/), которые позволяют
+автоматизировать процесс конфигурации
+созданных VMs с использованием популярных
+инструментов управления конфигурацией и
+обычных скриптов на bash.
+
+> Провижининг происходит автоматически при
+запуске новой машины. Если же мы хотим
+применить провижининг на уже запущенной
+машине, то необходимо использовать команду
+provision.
+
+`vagrant provision dbserver`
+
+  - raw модуль позволяет запускать команды по
+SSH и не требует наличия python на управляемом хосте
+  - для сбора фактов ансиблом требуется
+установленный python
+
+>Vagrant динамически генерирует инвентори
+файл для провижининга в соответствии с конфигурацией в Vagrantfile.
+
+#### Задание со *
+  - добавим в файл roles/app/vars/main.yml
+```
+nginx_sites:
+  default:
+    - listen 80
+    - server_name "reddit"
+    - location / {
+        proxy_pass http://127.0.0.1:9292;
+      }
+```
+
+#### Тестирование роли
+
+ - установка зависимостей
+```
+molecule>=2.6
+testinfra>=1.10
+python-vagrant>=0.5.15
+```
+ - тестирование роли
+`molecule init scenario --scenario-name default -r db -d vagrant`
+ - добавим несколько тестов, используя модули Testinfra, для проверки конфигурации
+```
+import os
+import testinfra.utils.ansible_runner
+testinfra_hosts = testinfra.utils.ansible_runner.AnsibleRunner(
+ os.environ['MOLECULE_INVENTORY_FILE']).get_hosts('all')
+# check if MongoDB is enabled and running
+def test_mongo_running_and_enabled(host):
+    mongo = host.service("mongod")
+    assert mongo.is_running
+    assert mongo.is_enabled
+# check if configuration file contains the required line
+def test_config_file(host):
+    config_file = host.file('/etc/mongod.conf')
+    assert config_file.contains('bindIp: 0.0.0.0')
+    assert config_file.is_file
+```
+ - db/molecule/default/molecule.yml содержит описание тестовой машины
+ - `molecule create` создание тестовой машины
+ - `molecule login -h instance` для доступа к тестовой машине
+ - db/molecule/default/playbook.yml плэйбук для тестов
+ - `molecule converge` применить плэйбук
+ - `molecule verify` запустим тесты
+
+ #### Самостоятельно
+  - тест, проверяющий порт базы
+ ```
+ def test_db_port(host):
+     db_port = host.socket("tcp://27017")
+     assert db_port.is_listening
+ ```
+
+  - модифицируем packer_db/app.yml
+ ```
+             "extra_arguments": [
+                "--ssh-extra-args",
+                "-o IdentitiesOnly=yes",
+                "--tags", "ruby"
+ ```
